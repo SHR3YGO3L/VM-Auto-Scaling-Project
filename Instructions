@@ -1,0 +1,169 @@
+# Setup Instructions
+Step 1: Create S3 Bucket
+Objective: Store CSV files containing VM requirements.
+Navigate to the AWS S3 Console.
+
+Click Create bucket.
+
+Bucket name: vm-scaling-bucket.
+
+Region: Select your region (e.g., us-east-1).
+
+Uncheck Block all public access (ensure appropriate permissions).
+
+Click Create bucket.
+
+Step 2: Create IAM Role for Lambda
+
+# Objective: Grant permissions to access S3 and manage EC2.
+Go to the IAM Console.
+
+Select Roles → Create role.
+
+Trusted entity: AWS service → Lambda.
+
+Attach policies:
+AmazonS3FullAccess
+
+AmazonEC2FullAccess
+
+CloudWatchLogsFullAccess
+
+Role name: Lambda-S3-EC2-Role.
+
+Click Create role.
+
+Step 3: Create Security Group
+
+# Objective: Allow SSH/HTTP access to EC2 instances.
+Navigate to the EC2 Console.
+
+Select Security Groups → Create security group.
+
+Name: Scaling-SG.
+
+Description: Security group for scaled instances.
+
+Add inbound rules:
+SSH (Port 22): Source = My IP.
+
+HTTP (Port 80): Source = 0.0.0.0/0.
+
+Click Create security group.
+
+Step 4: Create Key Pair
+
+# Objective: Enable SSH access to EC2 instances.
+In the EC2 Console, go to Key Pairs → Create key pair.
+
+Name: scaling-keypair.
+
+Key pair type: RSA.
+
+Private key format: .pem.
+
+Click Create.
+
+Download and store the .pem file securely.
+
+Step 5: Create Lambda Function
+
+# Objective: Process CSV files and manage EC2 instances.
+Go to the Lambda Console.
+
+Click Create function → Author from scratch.
+
+Name: vm-scaling-function.
+
+Runtime: Python 3.9.
+
+Architecture: x86_64.
+
+Execution role: Select Lambda-S3-EC2-Role.
+
+Click Create function.
+
+Replace the default code with the following:
+
+Update the following in the code:
+AMI_ID: Replace with the appropriate AMI ID for your region (find in EC2 Console).
+
+SECURITY_GROUP_IDS: Replace with the Security Group ID from Step 3.
+
+Verify KEY_NAME matches the key pair from Step 4.
+
+Deploy the code by clicking Deploy.
+
+Step 6: Configure Lambda Trigger
+
+# Objective: Trigger Lambda when a CSV is uploaded to S3.
+In the Lambda function, click Add trigger.
+
+Select S3.
+
+Bucket: vm-scaling-bucket.
+
+Event types: All object create events.
+
+Prefix: allocations/.
+
+Check Enable recursive invocation.
+
+Click Add.
+
+Step 7: Test the Workflow
+
+# Objective: Verify end-to-end functionality.
+Create a sample CSV file (vm_allocations.csv):
+
+csv
+
+Timestamp,CPU_usage_MHZ,Memory_usage_KB,Network_received_throughput_KB_s,VMs_needed
+2023-10-01 00:00:00,1800,3800,900,1
+
+Upload the CSV to S3:
+Go to the S3 bucket (vm-scaling-bucket).
+
+Click Upload.
+
+Select the CSV file.
+
+Set destination path: allocations/test-upload.csv.
+
+Click Upload.
+
+Check Lambda execution:
+Go to Lambda Console → Monitor → View CloudWatch logs.
+
+Verify successful execution logs.
+
+Verify EC2 instances:
+Go to EC2 Console.
+
+Check for running instances with the tag ScalingGroup=auto-scaled-vms.
+
+Project Files
+Code: lambda_function.py (Lambda code for processing CSV and scaling EC2).
+
+Configuration: 
+S3 bucket: vm-scaling-bucket.
+
+IAM role: Lambda-S3-EC2-Role.
+
+Security group: Scaling-SG.
+
+Key pair: scaling-keypair.pem.
+
+Sample CSV: vm_allocations.csv (example input file).
+
+Screenshots: Available in the screenshots/ directory (e.g., S3 bucket setup, Lambda logs, EC2 instances).
+
+Deployment Notes
+Ensure the AMI ID is valid for your region.
+
+Adjust INSTANCE_TYPE (e.g., t3.micro) based on requirements.
+
+Monitor CloudWatch logs for debugging.
+
+Secure the .pem file and restrict public access to the S3 bucket if not needed.
+
