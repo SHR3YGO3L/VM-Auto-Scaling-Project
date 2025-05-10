@@ -121,9 +121,7 @@ Click Add.
 Objective: Verify end-to-end functionality.
 
 📄 Sample CSV
-csv
-Copy
-Edit
+
 Timestamp,CPU_usage_MHZ,Memory_usage_KB,Network_received_throughput_KB_s,VMs_needed
 2023-10-01 00:00:00,1800,3800,900,1
 🚀 Upload CSV to S3
@@ -141,7 +139,4 @@ Go to EC2 Console → Instances.
 
 Look for running instances with tag:
 
-ini
-Copy
-Edit
 ScalingGroup=auto-scaled-vms
